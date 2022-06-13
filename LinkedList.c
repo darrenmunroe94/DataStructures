@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <stdbool.h>
 
 struct node{
@@ -9,16 +10,14 @@ struct node{
 };
 typedef struct node node;
 
-node addNode(char *data, node *nextNode);
+node *addNode();
 void insertNode(node *newNode, node *currentNode, node *nextNode);
-void deleteNode(node *unwantedNode);
 node *nodeSearch(node *startingNode, char *searchData);
+void deleteNode(node *headNode, node *unwantedNode);
 
-node addNode(char *nodeData, node *nextNode){
+node *addNode(){
 
-    node newNode;
-    newNode.data = nodeData;
-    newNode.next = nextNode;
+    node *newNode = malloc(sizeof(node));
 
     return(newNode);
 }
@@ -34,41 +33,44 @@ void insertNode(node *newNode, node *currentNode, node *nextNode){
 node *nodeSearch(node *startingNode, char *searchData){
 
     if(startingNode->data == searchData){
+
         return(startingNode);
     }
+    else if(startingNode->next == NULL){
 
-    if(startingNode->next == NULL){
         return(NULL);
     }
+    else{
 
-    node *priorNodePtr = startingNode;
+        startingNode = startingNode->next;
+        nodeSearch(startingNode, searchData);
+    }
 
-    while(true){
+    return(NULL); //if all else fails(somehow?)
+}
 
-        node *newNode = priorNodePtr->next;
+void deleteNode(node *headNode, node *unwantedNode){
 
-        if(newNode->next == NULL){
-            return(NULL);
-        }
+    //find prior node to unwanted
+    node *priorNode = headNode;
+    while(priorNode->next != unwantedNode){
 
-        else if(newNode->data == searchData){
-            return(newNode);
-        }
-
-        else{
-
-            priorNodePtr = newNode;
-        }
+        priorNode = priorNode->next;
 
     }
 
-    return(NULL);
+    if(unwantedNode->next == NULL){ //if unwanted nodes is a tail, free unwanted from memory
 
-}
+        priorNode->next = NULL; //prior node is new tail
 
-void deleteNode(node *unwantedNode){
+        free(unwantedNode);
 
-    //find prior node to unwanted
-    //collect address of node after unwanted
-    //point node of prior to node after unwanted
+        return(0);
+    }
+
+    //point the node before unwanted to the node after unwanted
+    node *nextNode = unwantedNode->next;
+    priorNode->next = nextNode;
+
+    free(unwantedNode);
 }
